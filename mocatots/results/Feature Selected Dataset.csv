@@ -1,0 +1,4 @@
+Model,RMSE_mean,RMSE_stdev,RMSE_skew,RMSE_kurtosis,MAE_mean,MAE_stdev,MAE_skew,MAE_kurtosis,R2_mean,R2_stdev,R2_skew,R2_kurtosis
+Ridge Regression,2.4305,0.3141,1.9650,2.9633,1.9329,0.2225,-0.0815,0.1368,-0.1461,0.1538,-0.7753,-0.5329
+Random Forest,2.3688,0.3039,1.8393,2.5369,1.8601,0.1882,-0.5557,0.1201,-0.0861,0.1208,-0.2870,-0.7081
+Gradient Boosting,2.4099,0.3690,1.3757,1.6203,1.8709,0.1924,0.6743,-0.0649,-0.1202,0.1635,-1.6330,1.7141
