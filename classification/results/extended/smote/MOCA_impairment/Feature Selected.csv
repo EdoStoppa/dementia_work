@@ -1,0 +1,4 @@
+Model,Accuracy_mean,Accuracy_stdev,Accuracy_skew,Accuracy_kurtosis,Precision_mean,Precision_stdev,Precision_skew,Precision_kurtosis,Recall_mean,Recall_stdev,Recall_skew,Recall_kurtosis,F1_mean,F1_stdev,F1_skew,F1_kurtosis
+Logistic Regression,0.5514,0.0677,-0.1337,-0.9794,0.5521,0.0801,-0.1039,-0.5237,0.5588,0.1243,-0.0679,-0.9088,0.5486,0.0824,-0.6528,-0.2555
+Random Forest,0.7429,0.0788,-1.3459,1.4737,0.7255,0.0880,-0.5759,0.3177,0.7873,0.1016,-1.2824,1.7079,0.7522,0.0804,-1.9846,3.0164
+Gradient Boosting,0.6886,0.0578,-1.5146,1.3320,0.6618,0.0537,-1.1880,1.0529,0.7644,0.1053,-0.6509,0.4023,0.7070,0.0661,-1.8802,2.3743

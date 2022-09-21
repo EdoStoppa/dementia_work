@@ -3,6 +3,7 @@ import pandas as pd
 from pathlib import Path
 from scipy.stats import skew, kurtosis
 import numpy as np
+import smogn
 
 import plots, data_handling
 
@@ -117,7 +118,7 @@ def evaluate(results: list):
            (np.mean(r2), np.std(r2), skew(r2), kurtosis(r2))
 
 def save_extended_results(results: list, dataset: str) -> None:
-    with open(os.path.join(str(Path(__file__).parent.absolute()), 'results', f'{dataset}.csv'), 'w+') as f:
+    with open(os.path.join('results', f'{dataset}.csv'), 'w+') as f:
         # First write the columns of the csv
         f.write('Model,RMSE_mean,RMSE_stdev,RMSE_skew,RMSE_kurtosis,MAE_mean,MAE_stdev,MAE_skew,MAE_kurtosis,R2_mean,R2_stdev,R2_skew,R2_kurtosis\n')
         # Write all the extended results
@@ -145,10 +146,15 @@ def visualize(full_data: list, full_df: pd.DataFrame):
 
 def main():
     NUM_FOLDS = 10
+    SMOTE = False
 
     # Firt, simply load the datasets
-    full_data_df = load_dataset()
-    selected_data_df = load_selected_dataset()
+    if SMOTE:
+        full_data_df = smogn.smoter(data = load_dataset().reset_index(), y = 'MOCATOTS')
+        selected_data_df = smogn.smoter(data = load_selected_dataset().reset_index(), y = 'MOCATOTS')
+    else:
+        full_data_df = load_dataset()
+        selected_data_df = load_selected_dataset()
 
     # Initialize the dataframe and prepare for training/testing
     full_data, pca32_data, pca64_data, selected_data = initialize(full_data_df, selected_data_df, NUM_FOLDS)
@@ -159,8 +165,7 @@ def main():
     # Define Hyperparameters for the models
     hyperparameters = [{'normalize': True},
                        {'max_depth': 1},
-                       {'loss': 'absolute_error', 'learning_rate': 0.01},
-                       {'normalize': True}]
+                       {'loss': 'absolute_error', 'learning_rate': 0.01}]
     # Train and test for all the models
     data_res = []
     for data, data_name in datasets:
