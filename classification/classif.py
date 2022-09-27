@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 def load_dataset(label: str, verbose = False) -> pd.DataFrame:
     # Load the full dataset
-    full_data_df = data_handling.get_data('partialData.csv', 'REGTRYID', label, verbose=verbose)
+    full_data_df = data_handling.get_data('fullData.csv', 'REGTRYID', label, verbose=verbose)
     # Clean the dataset fixing NaN entries
     full_data_df = data_handling.remove_nan(full_data_df)
     # Convert string categorical value to numerical range
@@ -37,7 +37,7 @@ def load_dataset(label: str, verbose = False) -> pd.DataFrame:
 
 def load_selected_dataset(label: str) -> pd.DataFrame:
     # Load the selected dataset
-    selected_data_df = data_handling.get_selected_data('partialData.csv', 'REGTRYID', label)
+    selected_data_df = data_handling.get_selected_data('fullData.csv', 'REGTRYID', label)
     # Clean the dataset fixing NaN entries
     selected_data_df = data_handling.remove_nan(selected_data_df)
 
@@ -214,3 +214,5 @@ if __name__ == '__main__':
     # AB42_AB40Positivity
     main('AB42_AB40Positivity', num_folds=10, smote=False, pca_dims=(16,32))
     main('AB42_AB40Positivity', num_folds=10, smote=True, pca_dims=(16,32))
+
+    

@@ -73,7 +73,7 @@ def plot_roc_curve(data_name: list, data: list, algos: list, label: str, smote: 
     plt.clf()
     plt.cla()
 
-def plot_best_feat(feats, scores, type_plot: str, func: str, space=1):
+def plot_best_feat(feats, scores, type_plot: str, func: str, lbl: str, space=1):
     pos = np.arange(len(feats))*space
     plt.bar(pos, scores)
     plt.title(f'Best Features {type_plot} ({func})')
@@ -81,6 +81,6 @@ def plot_best_feat(feats, scores, type_plot: str, func: str, space=1):
     plt.xlabel('Features')
     plt.xticks(pos, feats, rotation = 90)
     plt.tight_layout()
-    plt.savefig(os.path.join('results', 'imgs', 'best_features', f'{func.lower()}_{type_plot.lower()}.png'))
+    plt.savefig(os.path.join('results', 'imgs', 'best_features', f'{lbl}', f'{func.lower()}_{type_plot.lower()}.png'))
     plt.clf()
     plt.cla()

@@ -1,15 +1,15 @@
 import numpy as np
 from plots import plot_best_feat
-from classification import load_dataset
+from classif import load_dataset
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import Lasso
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.metrics import mean_absolute_error
+from imblearn.over_sampling import SMOTE
 
-from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_regression
+from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
 
 import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
@@ -68,19 +68,22 @@ def get_topK(X, y, cols, func, runs=10, k=16):
     return top_ks, top_scores
     
     
-def stat_analysis():
-    df = load_dataset()
-    cols = df.drop(['MOCATOTS'], axis=1).columns.to_numpy()
+def stat_analysis(LABEL):
+    
+    df = load_dataset(LABEL)
+    cols = df.drop([LABEL], axis=1).columns.to_numpy()
     full_data = df.to_numpy()
     X, y = full_data[:, :-1], full_data[:, -1]
+    smt = SMOTE()
+    X, y = smt.fit_resample(X, y)
 
     # F Function
-    f_top_ks, f_top_scores = get_topK(X, y, cols, f_regression, runs=1)
+    f_top_ks, f_top_scores = get_topK(X, y, cols, f_classif, runs=1)
     f_top_ks, f_top_scores = f_top_ks[0], f_top_scores[0]
-    plot_best_feat(f_top_ks, f_top_scores, 'Scores', 'F_Function', space=2)
+    plot_best_feat(f_top_ks, f_top_scores, 'Scores', 'F_Function', LABEL, space=2)
     
     # Mutual Information
-    mi_top_ks, mi_top_scores = get_topK(X, y, cols, mutual_info_regression, runs=10)
+    mi_top_ks, mi_top_scores = get_topK(X, y, cols, mutual_info_classif, runs=10)
     # Get the cumulative scores divided by the number of runs
     mi_tot_scores = {}
     for ks, tops in zip(mi_top_ks, mi_top_scores):
@@ -94,16 +97,18 @@ def stat_analysis():
     mi_bins = list(zip(list(unique), list(count)))
     mi_bins.sort(key=lambda x: x[1], reverse=True)
     unique, count = zip(*mi_bins)
-    plot_best_feat(list(unique), list(count), 'Frequency', 'Mutual_Info', space=2)
-    plot_best_feat(list(unique), [mi_tot_scores[k] for k in unique], 'Scores', 'Mutual_Info', space=2)
+    plot_best_feat(list(unique), list(count), 'Frequency', 'Mutual_Info', LABEL, space=2)
+    plot_best_feat(list(unique), [mi_tot_scores[k] for k in unique], 'Scores', 'Mutual_Info', LABEL, space=2)
     
 
 def ml():
     print()
-    df = load_dataset()
-    cols = df.drop(['MOCATOTS'], axis=1).columns.to_numpy()
+    df = load_dataset('AB42_AB40Positivity')
+    cols = df.drop(['AB42_AB40Positivity'], axis=1).columns.to_numpy()
     full_data = df.to_numpy()
     X, y = full_data[:, :-1], full_data[:, -1]
+    smt = SMOTE()
+    X, y = smt.fit_resample(X, y)
 
     # LASSO
     lasso_pip = Pipeline([
@@ -116,12 +121,13 @@ def ml():
     # DECISION TREE
     tree_pip = Pipeline([
                      ('scaler', StandardScaler()),
-                     ('model', DecisionTreeRegressor())])
+                     ('model', DecisionTreeClassifier())])
     tree_imp = best_feat(get_imp_tree, tree_pip, X, y, runs=100)
     print(tree_imp[tree_imp > 0])
     print(cols[tree_imp > 0], '\n')
 
 
-    
-
-stat_analysis()
+if __name__ == '__main__':
+    stat_analysis('MOCA_impairment')
+    stat_analysis('AB42_AB40Positivity')
+    stat_analysis('tTau_AB42Positivity')
