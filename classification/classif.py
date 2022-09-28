@@ -88,11 +88,14 @@ def initialize(df: pd.DataFrame, selected_df: pd.DataFrame, num_folds: int, smot
 def train(train_data: list, constructor, parameters: dict = None) -> list:
     models = []
     for X, y in train_data:
+        # Instantiate the model
         model = constructor()
         if parameters:
+            # Set hyperparameters
             model.set_params(**parameters)
-
+        # Train the model
         model = model.fit(X, y)
+        # Save the model
         models.append(model)
     
     return models
@@ -100,8 +103,11 @@ def train(train_data: list, constructor, parameters: dict = None) -> list:
 def test(test_data: list, trained_models: list) -> list:
     results = []
     for (X, y_true), model in zip(test_data, trained_models):
+        # Test the model
         y_pred = model.predict(X)
+        # Obtain prediction probabilities (used for ROC curve)
         y_prob = model.predict_proba(X)[:, 1]
+        # Save results
         results.append((y_true, y_pred, y_prob))
 
     return results

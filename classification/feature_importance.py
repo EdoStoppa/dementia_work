@@ -1,38 +1,46 @@
 import numpy as np
 from plots import plot_best_feat
 from classif import load_dataset
-from sklearn.model_selection import train_test_split, GridSearchCV
+# Data and models manipulation
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
+# Models
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import Lasso
-from sklearn.exceptions import ConvergenceWarning
+# Imbalanced dataset fix
 from imblearn.over_sampling import SMOTE
-
-from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
-
+# Others
+from sklearn.exceptions import ConvergenceWarning
 import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
-def get_imp_lasso(pipeline: Pipeline, X, y):
 
+
+def get_imp_lasso(pipeline: Pipeline, X, y):
+    # Define a GridSearch for Lasso Regression
     search = GridSearchCV(pipeline,
                       {'model__alpha':np.arange(0.1, 10, 0.1)},
                       cv = 3,
                       scoring="neg_mean_squared_error")
-
+    # Find best Hypeparameters
     search.fit(X, y)
+    # Obtain the Lasso coefficients
     coefficients = search.best_estimator_.named_steps['model'].coef_
     importance = np.abs(coefficients)
 
     return importance
 
 def get_imp_tree(pipeline, X, y):
+    # Define a GridSearch for Decision Tree
     search = GridSearchCV(pipeline,
                       {'model__max_depth': np.arange(1, 15, 1)},
                       cv = 3,
                       scoring = "neg_mean_squared_error")
+    # Find best Hypeparameters
     search.fit(X, y)
+    # Obtain the Decision Tree feature importances
     importance = search.best_estimator_.named_steps['model'].feature_importances_
 
     return importance
@@ -41,10 +49,11 @@ def get_imp_tree(pipeline, X, y):
 def best_feat(func, pipeline, X, y, runs=10):
     best = None
     for _ in range(runs):
+        # Get the train/test split
         X_train, _, y_train, _ = train_test_split(X, y, train_size=0.2)
+        # Run the function realted to the model used (ex: get_imp_tree)
         imp = func(pipeline, X_train, y_train)
-        #imp = func(pipeline, X, y)
-
+        # Update the best features
         if best is not None:
             best += imp
         else:
@@ -52,28 +61,36 @@ def best_feat(func, pipeline, X, y, runs=10):
 
     return imp
 
-def get_topK(X, y, cols, func, runs=10, k=16):
-    select = SelectKBest(score_func=func)
+def get_topK(X, y, cols, score_func, runs=10, k=16):
+    # Create object that will rank features based on the score function
+    select = SelectKBest(score_func=score_func)
     top_ks = []
     top_scores = []
     for _ in range(runs):
+        # Obtain the scores for all the features
         scores = list(select.fit(X, y).scores_)
+        # Associate each score to the feature that is related to
         n_scores = list(zip(scores, [i for i in range(len(scores))]))
+        # Sort the scores from highest to lowest
         n_scores.sort(key=lambda x: x[0], reverse=True)
+        # Retrieve scores and features indexes
         scores, pos = zip(*n_scores)
-
+        # Save top-k scores and their feature names
         top_scores.append(list(scores[:k]))
         top_ks.append(list(cols[list(pos)[:k]]))
 
     return top_ks, top_scores
     
     
-def stat_analysis(LABEL):
-    
+def stat_analysis(LABEL: str):
+    # Load the dataset
     df = load_dataset(LABEL)
+    # Get the column names (without the label)
     cols = df.drop([LABEL], axis=1).columns.to_numpy()
+    # Separate features from labels
     full_data = df.to_numpy()
     X, y = full_data[:, :-1], full_data[:, -1]
+    # Use SMOTE
     smt = SMOTE()
     X, y = smt.fit_resample(X, y)
 
@@ -101,12 +118,15 @@ def stat_analysis(LABEL):
     plot_best_feat(list(unique), [mi_tot_scores[k] for k in unique], 'Scores', 'Mutual_Info', LABEL, space=2)
     
 
-def ml():
-    print()
-    df = load_dataset('AB42_AB40Positivity')
-    cols = df.drop(['AB42_AB40Positivity'], axis=1).columns.to_numpy()
+def ml(LABEL: str):
+    # Load the dataset
+    df = load_dataset(LABEL)
+    # Get the column names (without the label)
+    cols = df.drop([LABEL], axis=1).columns.to_numpy()
+    # Separate features from labels
     full_data = df.to_numpy()
     X, y = full_data[:, :-1], full_data[:, -1]
+    # Use SMOTE
     smt = SMOTE()
     X, y = smt.fit_resample(X, y)
 
